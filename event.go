@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
 
 package iaevents
 
@@ -25,12 +24,11 @@ import (
 )
 
 // Activator is the interface that wraps the activate method.
-//
 // Activate is able to return activated (being counted) perf event as ActiveEvent.
-// Returned active event is configured to fulfill provided configuration:
-// 	placement provides a specific hardware placement for event,
-//  targetProcess provides a specific process (or cgroup) for event to monitor,
-//	options specify any additional perf configuration options.
+// Returned active event is configured to fulfill provided configuration
+// placement provides a specific hardware placement for event,
+// targetProcess provides a specific process (or cgroup) for event to monitor,
+// options specify any additional perf configuration options.
 // Activate must return a non-nil error if event cannot be activated, or provided parameters are invalid.
 type Activator interface {
 	Activate(placement PlacementProvider, targetProcess TargetProcess, options Options) (*ActiveEvent, error)
@@ -96,7 +94,7 @@ func (pe *PerfEvent) NewPlacements(unit string, cpu int, cpus ...int) ([]Placeme
 	}
 	var pmuTypes []uint32
 	for _, namedType := range pe.PMUTypes {
-		if "" == unit || namedType.Name == unit || pe.PMUName == unit {
+		if unit == "" || namedType.Name == unit || pe.PMUName == unit {
 			pmuTypes = append(pmuTypes, namedType.PMUType)
 		}
 	}
@@ -139,17 +137,17 @@ func (pe *PerfEvent) activateWithLeader(placement PlacementProvider, targetProce
 
 	cpu, pmuType, pmuName, err := pe.configurePlacement(placement, &attr)
 	if err != nil {
-		return nil, fmt.Errorf("error during placement configuration: %v", err)
+		return nil, fmt.Errorf("error during placement configuration: %w", err)
 	}
 
 	err = pe.configurePerfEvent(options, &attr)
 	if err != nil {
-		return nil, fmt.Errorf("error during event options configuration: %v", err)
+		return nil, fmt.Errorf("error during event options configuration: %w", err)
 	}
 
 	pid, procFlags, err := pe.configureProcess(targetProcess, &attr)
 	if err != nil {
-		return nil, fmt.Errorf("error during process configuration: %v", err)
+		return nil, fmt.Errorf("error during process configuration: %w", err)
 	}
 
 	attr.Bits |= unix.PerfBitInherit
@@ -157,7 +155,7 @@ func (pe *PerfEvent) activateWithLeader(placement PlacementProvider, targetProce
 
 	fd, err := pe.unix.open(&attr, pid, cpu, groupFd, procFlags)
 	if err != nil {
-		return nil, fmt.Errorf("cannot open event: %s on pmu: %s due to perf error: %v", pe.Name, pmuName, err)
+		return nil, fmt.Errorf("cannot open event: %s on pmu: %s due to perf error: %w", pe.Name, pmuName, err)
 	}
 
 	decoded := pe.Decoded()
@@ -211,7 +209,7 @@ func (pe *PerfEvent) configurePlacement(placement PlacementProvider, attr *unix.
 	}
 	online, err := pe.cpuMonitor.cpuOnline(cpu)
 	if err != nil {
-		return 0, 0, "", fmt.Errorf("failed to check online status for cpu %d: %v", cpu, err)
+		return 0, 0, "", fmt.Errorf("failed to check online status for cpu %d: %w", cpu, err)
 	}
 	if !online {
 		return 0, 0, "", fmt.Errorf("cpu %d is offline", cpu)
@@ -227,7 +225,7 @@ func (pe *PerfEvent) configurePlacement(placement PlacementProvider, attr *unix.
 }
 
 func (pe *PerfEvent) ActivateMulti(placements []PlacementProvider, process TargetProcess, options Options) (*ActiveMultiEvent, error) {
-	var activeEvents []*ActiveEvent
+	activeEvents := make([]*ActiveEvent, 0, len(placements))
 	for _, pl := range placements {
 		activeEvent, err := pe.Activate(pl, process, options)
 		if err != nil {
@@ -292,11 +290,11 @@ func ActivateGroup(placement PlacementProvider, targetProcess TargetProcess, eve
 	// reset and enable counting
 	err = resetEventCounter(activeLeader.FileDescriptor, leader.unix)
 	if err != nil {
-		return nil, fmt.Errorf("cannot reset leader's event counting: %v", err)
+		return nil, fmt.Errorf("cannot reset leader's event counting: %w", err)
 	}
 	err = enableEventCounter(activeLeader.FileDescriptor, leader.unix)
 	if err != nil {
-		return nil, fmt.Errorf("cannot enable leader's event counting: %v", err)
+		return nil, fmt.Errorf("cannot enable leader's event counting: %w", err)
 	}
 	// restore original attributes values
 	*leader.Attr = leaderOrigAttr
@@ -365,7 +363,7 @@ func (ae *ActiveEvent) ReadValue() (CounterValue, error) {
 	}
 	values, err := ae.read(ae.unix, ae.FileDescriptor)
 	if err != nil {
-		return values, fmt.Errorf("cannot read values for event `%s`: %v", ae, err)
+		return values, fmt.Errorf("cannot read values for event `%s`: %w", ae, err)
 	}
 	return values, err
 }
@@ -387,7 +385,7 @@ func deactivateFile(helper unixHelper, fd int) error {
 		return fmt.Errorf("missing unix helper")
 	}
 	if err := helper.close(fd); err != nil {
-		return fmt.Errorf("cannot deactivate file: %v", err)
+		return fmt.Errorf("cannot deactivate file: %w", err)
 	}
 	return nil
 }
@@ -405,7 +403,7 @@ func readActiveEventValues(helper unixHelper, fd int) (CounterValue, error) {
 	// read event perf file content to byte buffer
 	_, err := helper.read(fd, &buffer)
 	if err != nil {
-		return newValues, fmt.Errorf("cannot read from file descriptor: %v", err)
+		return newValues, fmt.Errorf("cannot read from file descriptor: %w", err)
 	}
 	if len(buffer) != 24 {
 		return newValues, fmt.Errorf("cannot read values from file descriptor: bytes size not equal 24")

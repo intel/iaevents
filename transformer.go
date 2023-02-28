@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
 
 package iaevents
 
@@ -108,32 +107,32 @@ func (t *PerfTransformer) Transform(reader Reader, matcher Matcher) ([]*PerfEven
 
 	jsonEvents, err := reader.Read()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read JSON Events: %v", err)
+		return nil, fmt.Errorf("failed to read JSON Events: %w", err)
 	}
 	if len(jsonEvents) == 0 {
 		return nil, errors.New("reader returned no events to transform")
 	}
 
-	var perfEvents []*PerfEvent
+	perfEvents := make([]*PerfEvent, 0, len(jsonEvents))
 	for _, jsonEvent := range jsonEvents {
 		if jsonEvent == nil {
 			continue
 		}
 		match, err := matcher.Match(jsonEvent)
 		if err != nil {
-			return nil, fmt.Errorf("matcher error for event `%s`: %v", jsonEvent.EventName, err)
+			return nil, fmt.Errorf("matcher error for event `%s`: %w", jsonEvent.EventName, err)
 		}
 		if !match {
 			continue
 		}
 		jsonEventParsed, err := t.parseJSONEvent(jsonEvent)
 		if err != nil {
-			transformationErr.add(fmt.Errorf("failed to parse json event `%s`: %v", jsonEvent.EventName, err))
+			transformationErr.add(fmt.Errorf("failed to parse json event `%s`: %w", jsonEvent.EventName, err))
 			continue
 		}
 		resolvedEvent, err := t.resolve(jsonEventParsed)
 		if err != nil {
-			transformationErr.add(fmt.Errorf("failed to transform event `%s`: %v", jsonEventParsed.Name, err))
+			transformationErr.add(fmt.Errorf("failed to transform event `%s`: %w", jsonEventParsed.Name, err))
 			continue
 		}
 		perfEvents = append(perfEvents, resolvedEvent)
@@ -152,7 +151,7 @@ func (t *PerfTransformer) resolve(eventData *eventDefinition) (*PerfEvent, error
 
 	pmuTypes, err := t.findPMUs(eventData.PMU)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find PMU type %s: %v", eventData.PMU, err)
+		return nil, fmt.Errorf("failed to find PMU type %s: %w", eventData.PMU, err)
 	}
 	pmuRealName := pmuTypes[0].Name
 	pmuType := pmuTypes[0].PMUType
@@ -194,7 +193,7 @@ func (t *PerfTransformer) findPMUs(pmuName string) ([]NamedPMUType, error) {
 			realPMU = filepath.Base(paths[0])
 			pmuType, err = t.utils.getPMUType(realPMU)
 			if err != nil {
-				return nil, fmt.Errorf("cannot find PMU type for %s: %v", realPMU, err)
+				return nil, fmt.Errorf("cannot find PMU type for %s: %w", realPMU, err)
 			}
 		}
 	}
@@ -204,7 +203,7 @@ func (t *PerfTransformer) findPMUs(pmuName string) ([]NamedPMUType, error) {
 		realPMU = filepath.Base(paths[i])
 		pmuType, err = t.utils.getPMUType(realPMU)
 		if err != nil {
-			return nil, fmt.Errorf("cannot find PMU type for %s: %v", realPMU, err)
+			return nil, fmt.Errorf("cannot find PMU type for %s: %w", realPMU, err)
 		}
 		pmus = append(pmus, NamedPMUType{Name: realPMU, PMUType: pmuType})
 	}
@@ -220,7 +219,7 @@ func (t *PerfTransformer) findMultiPMUPaths(pmuName string) ([]string, error) {
 	globAssuredLen := len(commonPart) + 1
 	candidatePaths, err := t.io.glob(pattern)
 	if err != nil {
-		return nil, fmt.Errorf("glob failed for pattern %s: %v", pattern, err)
+		return nil, fmt.Errorf("glob failed for pattern %s: %w", pattern, err)
 	}
 	verifiedPaths := []string{}
 	for _, path := range candidatePaths {
@@ -247,7 +246,7 @@ func (u *resolverUtilsImpl) parseTerms(event *PerfEvent, terms string) error {
 	}
 	termsSet, err := u.splitEventTerms(terms)
 	if err != nil {
-		return fmt.Errorf("failed to parse event terms %s: %v", terms, err)
+		return fmt.Errorf("failed to parse event terms %s: %w", terms, err)
 	}
 	for _, term := range termsSet {
 		if u.specialAttributes(event.Attr, term.name, term.value) {
@@ -255,7 +254,7 @@ func (u *resolverUtilsImpl) parseTerms(event *PerfEvent, terms string) error {
 		}
 		err = u.parseTerm(event, term)
 		if err != nil {
-			return fmt.Errorf("failed to parse term %s: %v", term.name, err)
+			return fmt.Errorf("failed to parse term %s: %w", term.name, err)
 		}
 	}
 
@@ -273,7 +272,7 @@ func (resolverUtilsImpl) splitEventTerms(terms string) ([]*eventTerm, error) {
 		}
 		value, err := strconv.ParseUint(splittedTerm[1], 0, 64)
 		if err != nil {
-			return nil, fmt.Errorf("cannot parse term: %s: %v", term, err)
+			return nil, fmt.Errorf("cannot parse term: %s: %w", term, err)
 		}
 		eventTerms = append(eventTerms, &eventTerm{name: splittedTerm[0], value: value})
 	}
@@ -285,18 +284,18 @@ func (u *resolverUtilsImpl) parseTerm(event *PerfEvent, term *eventTerm) error {
 	formatPath := filepath.Join(sysDevicesPath, event.PMUTypes[0].Name, "format", term.name)
 	content, err := u.io.readAll(formatPath)
 	if err != nil {
-		return fmt.Errorf("cannot open kernel format %s: %v", formatPath, err)
+		return fmt.Errorf("cannot open kernel format %s: %w", formatPath, err)
 	}
 	configFormat := strings.TrimSpace(string(content))
 
 	// Example of config format to parse: "config:0-7,21"
 	configName, bitsFormat, err := splitConfigFormat(configFormat)
 	if err != nil {
-		return fmt.Errorf("cannot parse kernel format %s for %s: %v", configFormat, term.name, err)
+		return fmt.Errorf("cannot parse kernel format %s for %s: %w", configFormat, term.name, err)
 	}
 	configValue, err := u.formatValue(bitsFormat, term.value)
 	if err != nil {
-		return fmt.Errorf("cannot parse term %s=%d using format %s: %v", term.name, term.value, bitsFormat, err)
+		return fmt.Errorf("cannot parse term %s=%d using format %s: %w", term.name, term.value, bitsFormat, err)
 	}
 
 	switch configName {
@@ -333,7 +332,7 @@ func (resolverUtilsImpl) formatValue(format string, value uint64) (uint64, error
 	for _, bitsFormat := range bitsFormats {
 		bits, start, bitLen, err := parseBitFormat(bitsFormat)
 		if err != nil {
-			return 0, fmt.Errorf("cannot parse kernel format %s: %v", format, err)
+			return 0, fmt.Errorf("cannot parse kernel format %s: %w", format, err)
 		}
 		formattedValue = formattedValue | ((remainingValue & bits) << start)
 		remainingValue = remainingValue >> bitLen
@@ -407,7 +406,7 @@ func (u *resolverUtilsImpl) isPMUUncore(pmu string) (bool, error) {
 	var cpus int
 	opened, n, err := u.io.scanOneValue(cpumaskPath, "%d", &cpus)
 	if !opened && err != nil {
-		return false, fmt.Errorf("failed to open for uncore check, file %s: %v", cpumaskPath, err)
+		return false, fmt.Errorf("failed to open for uncore check, file %s: %w", cpumaskPath, err)
 	}
 	if err == nil && n == 1 {
 		return cpus == 0, nil
@@ -452,14 +451,14 @@ func parseJSONEventImpl(jsonEvent *JSONEvent) (*eventDefinition, error) {
 	fixedEventCode := strings.Split(jsonEvent.EventCode, ",")[0]
 	code, err := strconv.ParseUint(fixedEventCode, 0, 64)
 	if err != nil {
-		return eventData, fmt.Errorf("failed to parse EventCode `%s` into UInt: %v", fixedEventCode, err)
+		return eventData, fmt.Errorf("failed to parse EventCode `%s` into UInt: %w", fixedEventCode, err)
 	}
 	eventCode = code
 
 	if jsonEvent.ExtSel != "" {
 		code, err := strconv.ParseUint(jsonEvent.ExtSel, 0, 64)
 		if err != nil {
-			return eventData, fmt.Errorf("failed to parse ExtSel `%s` into UInt: %v", jsonEvent.ExtSel, err)
+			return eventData, fmt.Errorf("failed to parse ExtSel `%s` into UInt: %w", jsonEvent.ExtSel, err)
 		}
 		eventCode = eventCode | (code << 21)
 	}

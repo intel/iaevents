@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
 
 package iaevents
 
@@ -348,7 +347,7 @@ func TestActiveEvent_ReadValue(t *testing.T) {
 		shouldFail  bool
 	}{
 		{1, []byte{1, 1, 0, 0, 0, 0, 0, 0}, []byte{1, 0, 0, 0, 0, 0, 0, 0}, []byte{0, 0, 0, 0, 0, 0, 0, 0}, uint64(257), uint64(1), uint64(0), false},
-		{2, []byte{125, 1, 0, 0, 0, 0, 0, 0}, []byte{1, 0, 0, 0, 0, 0, 0, 0}, []byte{255, 255, 255, 255, 255, 255, 255, 255}, uint64(381), uint64(1), uint64(18446744073709551615), false},
+		{2, []byte{125, 1, 0, 0, 0, 0, 0, 0}, []byte{1, 0, 0, 0, 0, 0, 0, 0}, []byte{255, 255, 255, 255, 255, 255, 255, 255}, uint64(381), uint64(1), uint64(18446744073709551615), false}, //nolint:lll // Keep format of the test cases
 		{3, []byte{1, 1, 0, 0, 0, 0, 0}, []byte{1, 0, 0, 0, 0, 0, 0, 0}, []byte{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, true},
 		{4, []byte{1, 1, 0, 0, 0, 0, 0, 0}, []byte{1, 0, 0, 0, 0, 0}, []byte{0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, true},
 		{5, []byte{1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 12, 13, 14, 15, 16, 15, 14}, []byte{1, 0, 0, 0, 0, 0, 0, 0}, []byte{0}, 0, 0, 0, true},
@@ -472,7 +471,7 @@ func TestActivateGroup(t *testing.T) {
 	mockPMUType := uint32(123)
 	mockPlacement := &Placement{CPU: mCPU, PMUType: mockPMUType}
 	mockProcess := &EventTargetProcess{pid: mPID, processType: 0}
-	var events []CustomizableEvent
+	events := make([]CustomizableEvent, 0, len(mockEvents))
 
 	mLeader := mockEvents[0]
 	events = append(events, mLeader.event)

@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
 
 package iaevents
 
@@ -197,7 +196,7 @@ func readCPUid(provider cpuIDProvider) (CPUidStringer, error) {
 	}
 	cpu, err := provider.idFromCPUInfo(cpuInfoPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get cpu ID from %s: %v", cpuInfoPath, err)
+		return nil, fmt.Errorf("failed to get cpu ID from %s: %w", cpuInfoPath, err)
 	}
 	return cpu, nil
 }

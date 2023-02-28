@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
 
 package iaevents
 
@@ -65,7 +64,7 @@ func TestCounterValue_String(t *testing.T) {
 	}{
 		{"all zeroes", 0, 0, 0, "Raw:0, Enabled:0, Running:0"},
 		{"average values", 69078934790, 180157854328, 144133151122, "Raw:69078934790, Enabled:180157854328, Running:144133151122"},
-		{"all max uint64", math.MaxUint64, math.MaxUint64, math.MaxUint64, "Raw:18446744073709551615, Enabled:18446744073709551615, Running:18446744073709551615"},
+		{"all max uint64", math.MaxUint64, math.MaxUint64, math.MaxUint64, "Raw:18446744073709551615, Enabled:18446744073709551615, Running:18446744073709551615"}, //nolint:lll // Keep format of the test cases
 	}
 
 	for _, test := range tests {

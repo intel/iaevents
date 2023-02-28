@@ -15,26 +15,33 @@
 GOFILES ?= $(shell git ls-files '*.go')
 GOFMT ?= $(shell gofmt -l -s $(GOFILES))
 
+.PHONY: build
 build:
 	go build
 
+.PHONY: test
 test: mock
-	go test -count=1
+	go test -race -cover 
 
 coverage:
 	go test -coverprofile=coverage.out
 
+.PHONY: example
 example:
 	go build ./examples/iastat
 
+.PHONY: tidy
+tidy:
+	go mod tidy
+
+.PHONY: lint
 lint: lint-deps
 	golangci-lint run
 	golangci-lint run ./examples/iastat
 
 .PHONY: lint-deps
 lint-deps:
-	go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.38.0
-	go mod tidy
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.2
 
 .PHONY: vet
 vet:
@@ -47,12 +54,16 @@ deps:
 .PHONY: fmt
 fmt:
 	@gofmt -s -w $(GOFILES)
+	go fix ./...
 
 .PHONY: mock
 mock:
-	go get github.com/vektra/mockery/v2/.../@v2.7.4
 	mockery --inpackage --all --testonly
 	go mod tidy
+
+.PHONY: mock_install
+mock_install:
+	go install github.com/vektra/mockery/v2@v2.20.0
 
 .PHONY: clean
 clean:

@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
 
 package iaevents
 
@@ -41,7 +40,7 @@ func (h *perfModifiersHelper) updateQualifiers(attr *unix.PerfEventAttr, qualifi
 		if !strings.HasPrefix(qualifier, "config") {
 			err := h.updateModifiers(attr, qualifier)
 			if err != nil {
-				return fmt.Errorf("failed to update modifiers: %v", err)
+				return fmt.Errorf("failed to update modifiers: %w", err)
 			}
 			continue
 		}
@@ -54,7 +53,7 @@ func (h *perfModifiersHelper) updateQualifiers(attr *unix.PerfEventAttr, qualifi
 		var modifiers string
 		n, err := fmt.Sscanf(splittedQualifier[1], "%v%s", &value, &modifiers)
 		if n < 1 {
-			return fmt.Errorf("failed to parse qualifier `%s`: %v", qualifier, err)
+			return fmt.Errorf("failed to parse qualifier `%s`: %w", qualifier, err)
 		}
 		switch splittedQualifier[0] {
 		case "config":
