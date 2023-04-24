@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
 
 package iaevents
 
@@ -79,7 +78,7 @@ func TestActiveMultiEvent_ReadValues(t *testing.T) {
 		newActiveMulti := ActiveMultiEvent{events: nil, perfEvent: mPerfEvent}
 		res, err := newActiveMulti.ReadValues()
 		require.NoError(t, err)
-		require.Nil(t, res)
+		require.Empty(t, res)
 	})
 
 	t.Run("error while reading", func(t *testing.T) {
@@ -200,7 +199,7 @@ func TestAggregateValues(t *testing.T) {
 		rRunning *big.Int
 	}{
 		{"small numbers", []CounterValue{{100, 100, 100}, {100, 100, 100}}, big.NewInt(200), big.NewInt(200), big.NewInt(200)},
-		{"very big integer", []CounterValue{{math.MaxInt64 - 1, 0, 2316432}, {1, 100, 3358123}}, big.NewInt(math.MaxInt64), big.NewInt(100), big.NewInt(5674555)},
+		{"very big integer", []CounterValue{{math.MaxInt64 - 1, 0, 2316432}, {1, 100, 3358123}}, big.NewInt(math.MaxInt64), big.NewInt(100), big.NewInt(5674555)}, //nolint:lll // Keep format of the test cases
 		{"more then max uint 64", []CounterValue{{math.MaxUint64, 100, 0}, {100, 100, 0}}, veryBig, big.NewInt(200), big.NewInt(0)},
 		{"maximum", []CounterValue{{math.MaxUint64, 700, 0}, {math.MaxUint64, 100, 0}}, veryVeryBig, big.NewInt(800), big.NewInt(0)},
 	}

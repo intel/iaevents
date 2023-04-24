@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
 
 package iaevents
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -86,7 +85,7 @@ func (h *ioHelperImpl) readAll(path string) ([]byte, error) {
 		return nil, err
 	}
 	defer fd.Close()
-	byteValue, err := ioutil.ReadAll(fd)
+	byteValue, err := io.ReadAll(fd)
 	if err != nil {
 		return nil, err
 	}

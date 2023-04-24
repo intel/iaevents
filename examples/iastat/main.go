@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
+
 // Example program to show usage of iaevents package
 
 package main
@@ -365,7 +365,7 @@ func (s *cpusList) Set(value string) error {
 		// Single value
 		num, err := strconv.ParseUint(val, 0, 32)
 		if err != nil {
-			return fmt.Errorf("wrong format for cpu number `%s`: %v", val, err)
+			return fmt.Errorf("wrong format for cpu number `%s`: %w", val, err)
 		}
 		*s = append(*s, int(num))
 	}
@@ -385,7 +385,7 @@ func (g *group) customEvents() ([]iaevents.CustomizableEvent, error) {
 	for _, event := range g.events {
 		options, err := iaevents.NewOptions().SetAttrModifiers(event.attrModifiers).Build()
 		if err != nil {
-			return nil, fmt.Errorf("failed to set modifiers for event %s: %v", event.name, err)
+			return nil, fmt.Errorf("failed to set modifiers for event %s: %w", event.name, err)
 		}
 		customEvents = append(customEvents, iaevents.CustomizableEvent{Event: event.perfEvent, Options: options})
 	}

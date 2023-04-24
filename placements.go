@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
 
 package iaevents
 
@@ -85,7 +84,7 @@ func NewCorePlacements(factory PlacementFactory, cpu int, cpus ...int) ([]Placem
 func NewUncorePlacement(factory PlacementFactory, unit string, socket int) (PlacementProvider, error) {
 	socketToCPU, err := newCPUAssigner().assignCPUToSocket()
 	if err != nil {
-		return nil, fmt.Errorf("failed to translate socket `%d` to corresponding CPU: %v", socket, err)
+		return nil, fmt.Errorf("failed to translate socket `%d` to corresponding CPU: %w", socket, err)
 	}
 	return uncorePlacementForUnit(factory, socketToCPU, unit, socket)
 }
@@ -112,7 +111,7 @@ func uncorePlacementForUnit(factory PlacementFactory, socketToCPU map[int]int, u
 func NewUncoreAllPlacements(factory PlacementFactory, socket int) ([]PlacementProvider, error) {
 	socketToCPU, err := newCPUAssigner().assignCPUToSocket()
 	if err != nil {
-		return nil, fmt.Errorf("failed to translate socket `%d` to corresponding CPU: %v", socket, err)
+		return nil, fmt.Errorf("failed to translate socket `%d` to corresponding CPU: %w", socket, err)
 	}
 	return uncorePlacementsForAllUnits(factory, socketToCPU, socket)
 }

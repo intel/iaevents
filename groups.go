@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
 
 package iaevents
 
@@ -56,7 +55,7 @@ func (am *ActiveMultiEvent) PerfEvent() *PerfEvent {
 
 // ReadValues returns all active multi PMU events counter value.
 func (am *ActiveMultiEvent) ReadValues() ([]CounterValue, error) {
-	var valuesGroup []CounterValue
+	valuesGroup := make([]CounterValue, 0, len(am.events))
 	for _, b := range am.events {
 		value, err := b.ReadValue()
 		if err != nil {
@@ -68,8 +67,9 @@ func (am *ActiveMultiEvent) ReadValues() ([]CounterValue, error) {
 }
 
 func (am *ActiveMultiEvent) String() string {
-	var all []string
-	for _, event := range am.Events() {
+	events := am.Events()
+	all := make([]string, 0, len(events))
+	for _, event := range events {
 		all = append(all, event.String())
 	}
 	return strings.Join(all, ",")
@@ -97,8 +97,9 @@ func (ae *ActiveEventGroup) addEvent(event *ActiveEvent) {
 }
 
 func (ae *ActiveEventGroup) String() string {
-	var all []string
-	for _, event := range ae.Events() {
+	events := ae.Events()
+	all := make([]string, 0, len(events))
+	for _, event := range events {
 		all = append(all, event.String())
 	}
 	return strings.Join(all, ",")

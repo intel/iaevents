@@ -1,4 +1,6 @@
 # Created by .ignore support plugin (hsz.mobi)
+!.github
+
 ### Go template
 # Binaries for programs and plugins
 *.exe
@@ -15,6 +17,10 @@ tip
 *.out
 
 VERSION
+
+
+# VSCode config
+.vscode
 
 # Dependency directories (remove the comment below to include it)
 # vendor/

@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build linux
-// +build amd64
+//go:build linux && amd64
 
 package iaevents
 
@@ -92,7 +91,7 @@ func TestPerfTransformer_Transform(t *testing.T) {
 
 		perfEvents, err := transformer.Transform(readerMock, matcherMock)
 		require.Error(t, err)
-		require.Nil(t, perfEvents)
+		require.Empty(t, perfEvents)
 		require.IsType(t, &TransformationError{}, err)
 		require.Equal(t, expectedErrMsg, err.Error())
 		readerMock.AssertExpectations(t)
@@ -118,7 +117,7 @@ func TestPerfTransformer_Transform(t *testing.T) {
 
 		perfEvents, err := transformer.Transform(readerMock, matcherMock)
 		require.Error(t, err)
-		require.Nil(t, perfEvents)
+		require.Empty(t, perfEvents)
 		require.IsType(t, &TransformationError{}, err)
 		require.Equal(t, expectedErrMsg, err.Error())
 
@@ -422,7 +421,8 @@ func TestValidateEntry(t *testing.T) {
 		{"Entry is asterix", args{"*", "test"}, true},
 		{"Asterix in entry", args{"IMC*", "test"}, true},
 		{"Entry is dot", args{".", "test"}, true},
-		{"Entry is too long", args{"veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongentry", "test"}, true},
+		{"Entry is too long", args{`veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryver
+		yveryveryveryveryveryveryveryveryveryveryverylongentry`, "test"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
