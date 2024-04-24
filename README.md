@@ -47,7 +47,7 @@ The library supports two JSON file formats: <https://github.com/intel/perfmon/is
 
 ## Create events reader
 
-The library requires to provide event definitions for *Transfomer*. It is fulfilled by *Reader* interface.
+The library requires to provide event definitions for *Transformer*. It is fulfilled by *Reader* interface.
 To instantiate the default *Reader* implementation create new *JSONFilesReader* with *NewFilesReader* method.
 
 ```go
@@ -61,7 +61,7 @@ If at least one file is in the [old format](https://github.com/intel/perfmon/iss
 err := reader.AddFiles(pathToFile1, pathToFile2)
 ```
 
-It's possbile to get headers info from perfmon events (only for the new JSON perfmon format).
+It's possible to get headers info from perfmon events (only for the new JSON perfmon format).
 *GetHeaders()* will return *map[string]JSONHeader* object, where the key of the map is path to the file
 
 ```go
@@ -98,7 +98,7 @@ To match all events provided by *Reader*, create new matcher without arguments.
 matcher := iaevents.NewNameMatcher()
 ```
 
-To resolve perf attributes of selected events call *Transform* method from *PerfTransfomer*. It returns
+To resolve perf attributes of selected events call *Transform* method from *PerfTransformer*. It returns
 slice of events with resolved perf attributes.
 
 ```go
