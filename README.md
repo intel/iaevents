@@ -7,15 +7,15 @@ provides such functionality in C language .
 
 Library exports main features as implementation of interfaces:
 
-* *Reader*             - provide events definition from JSON file(s)
-* *Matcher*            - match selected events for *Transformer*
-* *Transformer*        - transform event from event definition to proper perf event attributes
-* *Activator*          - set up event and start measuring
-* *MultiActivator*     - set up multi PMU event (for uncore events) and start measuring on all units
-* *ActiveEventMonitor* - read current value of perf event
-* *EventGroupMonitor*  - read current values for perf events aggregated in one group
-* *PlacementFactory*   - provide valid placement provider for selected unit and CPUs
-* *PlacementProvider*  - provide placement of particular event
+- *Reader*             - provide events definition from JSON file(s)
+- *Matcher*            - match selected events for *Transformer*
+- *Transformer*        - transform event from event definition to proper perf event attributes
+- *Activator*          - set up event and start measuring
+- *MultiActivator*     - set up multi PMU event (for uncore events) and start measuring on all units
+- *ActiveEventMonitor* - read current value of perf event
+- *EventGroupMonitor*  - read current values for perf events aggregated in one group
+- *PlacementFactory*   - provide valid placement provider for selected unit and CPUs
+- *PlacementProvider*  - provide placement of particular event
 
 Library contains default implementation for all the listed interfaces.
 It handles both core and uncore type events. To transform the event from JSON definition to corresponding perf
@@ -238,9 +238,9 @@ for _, activeEvent := range activeEventGroup.Events() {
 
 Obtained measurements are stored in *CounterValue* structure as three values:
 
-* Raw
-* Enabled
-* Running
+- Raw
+- Enabled
+- Running
 
 *Raw* is a total count of event. *Enabled* and *running* are total time the event was enabled and running.
 Normally these are the same. If more events are started than available counter slots on the PMU, then multiplexing
