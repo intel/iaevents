@@ -55,7 +55,8 @@ reader := iaevents.NewFilesReader()
 ```
 
 Next run *AddFiles* method with a path(s) to desired JSON file(s).
-If at least one file is in the [old format](https://github.com/intel/perfmon/issues/22), the method will add all paths, but will return DeprecatedFormatError error
+If at least one file is in the [old format](https://github.com/intel/perfmon/issues/22), the method will add all paths,
+but will return DeprecatedFormatError error.
 
 ```go
 err := reader.AddFiles(pathToFile1, pathToFile2)
@@ -296,7 +297,7 @@ iaevents is distributed under the Apache License, Version 2.0.
 
 ## Changelog
 
-| Version | Description |
-| --------| ----------- |
-| v1.0.0    | Init version. Golang version is 1.16 |
-| v1.1.0    | New [format](https://github.com/intel/perfmon/issues/22) of perfmon is supported. Update golang version to 1.19. Add new method: GetHeaders() |
+| Version | Description                                                                                                                                   |
+|---------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| v1.0.0  | Init version. Golang version is 1.16                                                                                                          |
+| v1.1.0  | New [format](https://github.com/intel/perfmon/issues/22) of perfmon is supported. Update golang version to 1.19. Add new method: GetHeaders() |
